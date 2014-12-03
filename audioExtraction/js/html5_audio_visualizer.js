@@ -188,6 +188,7 @@ Visualizer.prototype = {
         this.info = 'Playing ' + this.fileName;
         document.getElementById('fileWrapper').style.opacity = 0.2;
         this.propogateQueue(analyser);
+        //this._drawSpectrum(analyser);
     },
     propogateQueue: function (analyser) {
         var that = this,
@@ -261,7 +262,7 @@ Visualizer.prototype = {
             // Add this to the member queue
             that.terrainData.push(avgY);
 
-            console.log(that.terrainData[that.terrainData.length-1]);
+            //console.log(that.terrainData[that.terrainData.length-1]);
         }
         setInterval(calcHeights, 60);
     },
@@ -347,7 +348,7 @@ Visualizer.prototype = {
                 ctx.fillRect(i, cheight - that.inputRec[i], i, cheight);
             }
 
-            console.log (avgY);
+            //console.log (avgY);
 
             that.animationId = requestAnimationFrame(drawMeter);
         }
