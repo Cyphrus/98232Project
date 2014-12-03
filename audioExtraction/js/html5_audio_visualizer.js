@@ -259,6 +259,12 @@ Visualizer.prototype = {
             //yVal = bassAvg * 0.3 + midAvg * 0.10 + uprAvg * 0.35;
             yVal = bassAvg * 0.325 + midAvg * 0.175 + uprAvg * 0.10;
             avgY = (that.oldY === 0) ? yVal : ((that.oldY + yVal) / 2);
+            if(avgY < 0.0) {
+                avgY = 0.0;
+            }
+            else if (avgY > 100.0) {
+                avgY = 100.0;
+            }
             //avgY = yVal;
 
             that.inputRec.shift();
