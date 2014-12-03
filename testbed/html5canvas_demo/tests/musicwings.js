@@ -17,7 +17,7 @@ var embox2dTest_musicwings = function() {
     this.INITIAL_VELOCITY = new b2Vec2(5,0);
     this.TERMINAL_VELOCITY_X = 20; // maximum going right
     this.TERMINAL_VELOCITY_Y = -50; // maximum going down
-    this.FALLING_ACCEL = -10;
+    this.FALLING_ACCEL = -3;
 
     // boost
     this.onGround = false;
@@ -25,7 +25,7 @@ var embox2dTest_musicwings = function() {
     this.MAX_BOOST_FUEL = 100.0;
     this.BOOST_DRAINAGE_RATE = 1.0 / 3.0;
     this.BOOST_REGENERATION_RATE = 1.0 / 24.0;
-    this.BOOST_ACCEL = new b2Vec2(0.5,5);
+    this.BOOST_ACCEL = new b2Vec2(0.5,3);
 
     // animation
     this.MAX_ANIMATION_PARTICLES = 10;
