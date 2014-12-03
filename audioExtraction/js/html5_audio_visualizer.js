@@ -187,7 +187,83 @@ Visualizer.prototype = {
         this._updateInfo('Playing ' + this.fileName, false);
         this.info = 'Playing ' + this.fileName;
         document.getElementById('fileWrapper').style.opacity = 0.2;
-        this._drawSpectrum(analyser);
+        this.propogateQueue(analyser);
+    },
+    propogateQueue: function (analyser) {
+        var that = this,
+            canvas = document.getElementById('canvas'),
+            cwidth = canvas.width,
+            cheight = canvas.height - 2,
+            meterWidth = 10, //width of the meters in the spectrum
+            gap = 2, //gap between meters
+            capHeight = 2,
+            capStyle = '#fff',
+            meterNum = 800 / (10 + 40), //count of the meters
+            capYPositionArray = []; ////store the vertical position of the caps for the preivous frame
+
+        var calcHeights = function () {
+            var array = new Uint8Array(analyser.frequencyBinCount);
+            analyser.getByteFrequencyData(array);
+            if (that.status === 0) {
+                //fix when some sounds end the value still not back to zero
+                for (var i = array.length - 1; i >= 0; i--) {
+                    array[i] = 0;
+                };
+                allCapsReachBottom = true;
+                for (var i = capYPositionArray.length - 1; i >= 0; i--) {
+                    allCapsReachBottom = allCapsReachBottom && (capYPositionArray[i] === 0);
+                };
+                if (allCapsReachBottom) {
+                    cancelAnimationFrame(that.animationId); //since the sound is stoped and animation finished, stop the requestAnimation to prevent potential memory leak,THIS IS VERY IMPORTANT!
+                    return;
+                };
+            };
+            var step = Math.round(array.length / meterNum); //sample limited data from the total array
+            
+            // Begin height calculations:
+            var yVal = 0,
+                avgY = 0,
+                bassAvg = 0,
+                midAvg = 0,
+                uprAvg = 0;
+
+            for (var i = 0; i < meterNum; i++) {
+                var value = array[i * step];
+
+                // Calculating our averages
+                if(i <= 2) {
+                    bassAvg = bassAvg + value;
+                    if (i === 2) {
+                        bassAvg = bassAvg / 3;
+                    }
+                }
+                else if (i <= 11){
+                    midAvg = midAvg + value;
+                    if (i === 11) {
+                        midAvg = midAvg / 9;
+                    }
+                }
+                else {
+                    uprAvg = uprAvg + value;
+                    if (i === meterNum - 1) {
+                        uprAvg = uprAvg / 4;
+                    }
+                }
+            }
+            that.oldY = yVal;
+            //yVal = bassAvg * 0.3 + midAvg * 0.10 + uprAvg * 0.35;
+            yVal = bassAvg * 0.325 + midAvg * 0.175 + uprAvg * 0.10;
+            avgY = (that.oldY === 0) ? yVal : ((that.oldY + yVal) / 2);
+            //avgY = yVal;
+
+            that.inputRec.shift();
+            that.inputRec.push(avgY);
+            // Add this to the member queue
+            that.terrainData.push(avgY);
+
+            console.log(that.terrainData[that.terrainData.length-1]);
+        }
+        setInterval(calcHeights, 60);
     },
     _drawSpectrum: function(analyser) {
         var that = this,
