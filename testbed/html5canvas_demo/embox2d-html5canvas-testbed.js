@@ -138,13 +138,13 @@ function onMouseOut(canvas, evt) {
 function onKeyDown(canvas, evt) {
     //console.log(evt.keyCode);
     if ( evt.keyCode == 80 ) {//p
-        pause();
+        //pause();
     }
     else if ( evt.keyCode == 82 ) {//r
-        resetScene();
+        //resetScene();
     }
     else if ( evt.keyCode == 83 ) {//s
-        step();
+        //step();
     }
     else if ( evt.keyCode == 88 ) {//x
         zoomIn();
@@ -200,7 +200,8 @@ function zoomOut() {
     canvasOffset.y -= (newViewCenterWorld.y-currentViewCenterWorld.y) * PTM;
     draw();
 }
-        
+
+/*
 function updateDebugDrawCheckboxesFromWorld() {
     var flags = myDebugDraw.GetFlags();
     document.getElementById('drawShapesCheck').checked = (( flags & e_shapeBit ) != 0);
@@ -209,7 +210,9 @@ function updateDebugDrawCheckboxesFromWorld() {
     //document.getElementById('drawPairsCheck').checked = (( flags & e_pairBit ) != 0);
     document.getElementById('drawTransformsCheck').checked = (( flags & e_centerOfMassBit ) != 0);
 }
+*/
 
+/*
 function updateWorldFromDebugDrawCheckboxes() {
     var flags = 0;
     if ( document.getElementById('drawShapesCheck').checked )
@@ -218,12 +221,13 @@ function updateWorldFromDebugDrawCheckboxes() {
         flags |= e_jointBit;
     if ( document.getElementById('drawAABBsCheck').checked )
         flags |= e_aabbBit;
-    /*if ( document.getElementById('drawPairsCheck').checked )
-        flags |= e_pairBit;*/
+    //if ( document.getElementById('drawPairsCheck').checked )
+    //  flags |= e_pairBit;
     if ( document.getElementById('drawTransformsCheck').checked )
         flags |= e_centerOfMassBit;
     myDebugDraw.SetFlags( flags );
 }
+*/
 
 function updateContinuousRefreshStatus() {
     showStats = ( document.getElementById('showStatsCheck').checked );
@@ -287,7 +291,7 @@ function changeTest() {
     resetScene();
     if ( currentTest && currentTest.setNiceViewCenter )
         currentTest.setNiceViewCenter();
-    updateDebugDrawCheckboxesFromWorld();
+    //updateDebugDrawCheckboxesFromWorld();
     draw();
 }
 

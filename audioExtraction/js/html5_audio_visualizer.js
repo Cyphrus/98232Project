@@ -26,6 +26,7 @@ var Visualizer = function() {
     this.terrainData = [];
     this.oldY = 0;
     this.inputRec = new Array(audio.width);
+    this.active = false;
 };
 Visualizer.prototype = {
     ini: function() {
@@ -51,8 +52,8 @@ Visualizer.prototype = {
         //listen the file upload
         audioInput.onchange = function() {
             if (that.audioContext===null) {return;};
-            
-            //the if statement fixes the file selction cancle, because the onchange will trigger even the file selection been canceled
+
+            //the if statement fixes the file selection cancel, because the onchange will trigger even the file selection been canceled
             if (audioInput.files.length !== 0) {
                 //only process the first file
                 that.file = audioInput.files[0];
@@ -63,7 +64,9 @@ Visualizer.prototype = {
                 };
                 document.getElementById('fileWrapper').style.opacity = 1;
                 that._updateInfo('Uploading', true);
-                //once the file is ready,start the visualizer
+                // once the file is ready,start the visualizer
+                // lock the choice
+                audioInput.disabled = true;
                 that._start();
             };
         };
@@ -111,9 +114,9 @@ Visualizer.prototype = {
             if (audioContext === null) {
                 return;
             };
-            that._updateInfo('Decoding the audio', true);
+            that._updateInfo('Decoding the audio...', true);
             audioContext.decodeAudioData(fileResult, function(buffer) {
-                that._updateInfo('Decode succussfully,start the visualizer', true);
+                that._updateInfo('Decoded successfully', true);
                 that._visualize(audioContext, buffer);
             }, function(e) {
                 that._updateInfo('!Fail to decode the file', false);
@@ -129,6 +132,7 @@ Visualizer.prototype = {
         fr.readAsArrayBuffer(file);
     },
     _visualize: function(audioContext, buffer) {
+        this.setActive();
         var audioBufferSouceNode = audioContext.createBufferSource(),
             analyser = audioContext.createAnalyser(),
             firstDelay = audioContext.createDelay(),
@@ -186,7 +190,7 @@ Visualizer.prototype = {
         };
         this._updateInfo('Playing ' + this.fileName, false);
         this.info = 'Playing ' + this.fileName;
-        document.getElementById('fileWrapper').style.opacity = 0.2;
+        document.getElementById('fileWrapper').style.opacity = 1;
         this.propogateQueue(analyser);
         //this._drawSpectrum(analyser);
     },
@@ -295,7 +299,7 @@ Visualizer.prototype = {
                     allCapsReachBottom = allCapsReachBottom && (capYPositionArray[i] === 0);
                 };
                 if (allCapsReachBottom) {
-                    cancelAnimationFrame(that.animationId); //since the sound is stoped and animation finished, stop the requestAnimation to prevent potential memory leak,THIS IS VERY IMPORTANT!
+                    cancelAnimationFrame(that.animationId); //since the sound is stopped and animation finished, stop the requestAnimation to prevent potential memory leak,THIS IS VERY IMPORTANT!
                     return;
                 };
             };
@@ -390,5 +394,11 @@ Visualizer.prototype = {
     },
     getTerrainData: function () {
         return this.terrainData;
+    },
+    setActive: function () {
+        this.active = true;
+    },
+    getActive: function () {
+        return this.active;
     }
 }

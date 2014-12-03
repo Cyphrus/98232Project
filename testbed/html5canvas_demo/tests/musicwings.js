@@ -4,6 +4,8 @@ var embox2dTest_musicwings = function() {
     this.edgeCount = 0;
     this.edges = []
     this.lastEdgeVerts = [];
+    this.playerBodyDef = null;
+    this.playerFixDef = null;
     this.playerBody = null;
     this.terrainBody = null;
     this.tfd = null;
@@ -22,8 +24,8 @@ var embox2dTest_musicwings = function() {
     this.currentBoostFuel = 100.0; // a percentage
     this.MAX_BOOST_FUEL = 100.0;
     this.BOOST_DRAINAGE_RATE = 3.00;
-    this.BOOST_REGENERATION_RATE = 0.1;
-    this.BOOST_VELOCITY = new b2Vec2(0,1);
+    this.BOOST_REGENERATION_RATE = 0.2;
+    this.BOOST_VELOCITY = new b2Vec2(2,1);
 
     // animation
     this.MAX_ANIMATION_PARTICLES = 10;
@@ -34,6 +36,8 @@ var embox2dTest_musicwings = function() {
 
     // music
     this.visualizer = null;
+    this.initialized = false;
+    this.previousY = 0;
 }
 
 embox2dTest_musicwings.prototype.setNiceViewCenter = function() {
@@ -45,36 +49,20 @@ embox2dTest_musicwings.prototype.setNiceViewCenter = function() {
 embox2dTest_musicwings.prototype.setup = function() {
     //set up the Box2D scene here - the world is already created
 
-    var fileSelector = document.createElement('input');
-    fileSelector.setAttribute('type', 'file');
-
-    var selectDialogueLink = document.createElement('a');
-    selectDialogueLink.setAttribute('href', '');
-    selectDialogueLink.innerText = "Select File";
-
-    selectDialogueLink.onclick = function () {
-        fileSelector.click();
-        return false;
-    }
-
-    document.body.appendChild(selectDialogueLink);
-
     // music choice
     this.visualizer = new Visualizer();
+    this.visualizer.ini();
 
     // create the player body
     var circleShape = new b2CircleShape();
     circleShape.set_m_radius(0.4);
-    var fd = new b2FixtureDef();
-    fd.set_shape(circleShape);
-    fd.set_density(1.0);
-    fd.set_friction(0.9);
-    var bd = new b2BodyDef();
-    bd.set_type(b2_dynamicBody);
-    bd.set_position( new b2Vec2(3,10) );
-    this.playerBody = world.CreateBody(bd);
-    this.playerBody.CreateFixture(fd);
-    this.playerBody.SetLinearVelocity(this.INITIAL_VELOCITY);
+    this.playerFixDef = new b2FixtureDef();
+    this.playerFixDef.set_shape(circleShape);
+    this.playerFixDef.set_density(1.0);
+    this.playerFixDef.set_friction(0.9);
+    this.playerBodyDef = new b2BodyDef();
+    this.playerBodyDef.set_type(b2_dynamicBody);
+    this.playerBodyDef.set_position( new b2Vec2(3,10) );
 
     // set collision detection for boosts
     /*
@@ -128,8 +116,8 @@ embox2dTest_musicwings.prototype.setup = function() {
 
     var edgeVerts = [];
     edgeVerts.push(new b2Vec2(0, -1));
-    edgeVerts.push(new b2Vec2(3, 5));
-    edgeVerts.push(new b2Vec2(6, 0))
+    edgeVerts.push(new b2Vec2(this.EDGE_X, 5));
+    edgeVerts.push(new b2Vec2(2*this.EDGE_X, 0))
     for ( var i = 3; i < 13; i++ )
     {
         edgeVerts.push(new b2Vec2( this.EDGE_X * i, -i * this.EDGE_X / 2));
@@ -166,6 +154,17 @@ embox2dTest_musicwings.prototype.setup = function() {
 embox2dTest_musicwings.prototype.step = function() {
     //this function will be called at the beginning of every time step
 
+    // if not initialized yet, then the game hasn't started and a song needs to be chosen
+    if(!this.initialized) {
+        if(this.visualizer.getActive()) {
+            this.initialized = true;
+            this.playerBody = world.CreateBody(this.playerBodyDef);
+            this.playerBody.CreateFixture(this.playerFixDef);
+            this.playerBody.SetLinearVelocity(this.INITIAL_VELOCITY);
+        }
+        return;
+    }
+
     // animatePlayer();
 
     //move camera to follow player
@@ -177,7 +176,7 @@ embox2dTest_musicwings.prototype.step = function() {
     // if player has travelled far enough, spawn a new edge
     if ( (pos.get_x() / this.EDGE_X) > this.edgeCount )
     {
-        var array = this.virtualizer.getTerrainData();
+        var array = this.visualizer.getTerrainData();
 
         for (var i = 0; i < array.length; i++)
         {
@@ -188,11 +187,15 @@ embox2dTest_musicwings.prototype.step = function() {
             var v1 = this.lastEdgeVerts[1];
             var v2 = this.lastEdgeVerts[2];
 
-            var v3 = new b2Vec2(v2.get_x() + this.EDGE_X, newY);
-            // randomization
-            //var previousSlope = (v2.get_y()-v1.get_y()) / (v2.get_x()-v1.get_x());
-            //var newSlope = previousSlope + ((0.2-Math.random()) * 3);
-            //var v3 = new b2Vec2(v2.get_x() + this.EDGE_X, v2.get_y()+newSlope);
+            // change via song
+            //var slopeDiff = 0.3*(nextY-this.previousY);
+            //console.log(slopeDiff);
+            //var v3 = new b2Vec2(v2.get_x() + this.EDGE_X, v2.get_y()+slopeDiff);
+            // randomization and song - bias downwards
+            var previousSlope = (v2.get_y()-v1.get_y()) / (v2.get_x()-v1.get_x());
+            var newSlope = previousSlope + ((0.4-Math.random()) * 3);
+            newSlope += 0.2*(nextY-this.previousY);
+            var v3 = new b2Vec2(v2.get_x() + this.EDGE_X, v2.get_y()+newSlope);
 
             var edge = new b2EdgeShape();
             edge.Set(v1, v2);
@@ -206,6 +209,8 @@ embox2dTest_musicwings.prototype.step = function() {
 
             this.lastEdgeVerts.shift();
             this.lastEdgeVerts.push(v3);
+
+            this.previousY = nextY;
         }
         if(array.length > 0) {
             this.terrainBody.DestroyFixture(this.edges[0]);
@@ -222,7 +227,7 @@ embox2dTest_musicwings.prototype.step = function() {
     // boost fuel increase
     this.currentBoostFuel += this.BOOST_REGENERATION_RATE;
     this.currentBoostFuel = (this.currentBoostFuel > this.MAX_BOOST_FUEL) ? this.MAX_BOOST_FUEL : this.currentBoostFuel;
-    console.log(this.currentBoostFuel);
+    //console.log(this.currentBoostFuel);
 }
 
 /*
