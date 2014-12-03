@@ -8,16 +8,6 @@
  * view online demo:http://wayouliu.duapp.com/mess/audio_visualizer.html
  */
 
-// Global queue for transmitting terrain numbers.
-var terrainData = [];
-
-// Globals for music record keeping... This is gross but I don't know where else to put them right now.
-var inputRec = new Array(canvas.width);
-for (var i = 0; i < inputRec.length; i++)
-{
-    inputRec[i] = 0;
-}
-var oldY = 0;
 
 window.onload = function() {
     new Visualizer().ini();
@@ -33,6 +23,9 @@ var Visualizer = function() {
     this.status = 0; //flag for sound is playing 1 or stopped 0
     this.forceStop = false;
     this.allCapsReachBottom = false;
+    this.terrainData = [];
+    this.oldY = 0;
+    this.inputRec = new Array(canvas.width);
 };
 Visualizer.prototype = {
     ini: function() {
@@ -103,6 +96,7 @@ Visualizer.prototype = {
             };
             that.fileName = that.file.name;
             //once the file is ready,start the visualizer
+            QueueConsumer._eat();
             that._start();
         }, false);
     },
@@ -261,22 +255,23 @@ Visualizer.prototype = {
                     }
                 }
             }
-            oldY = yVal;
+            that.oldY = yVal;
             //yVal = bassAvg * 0.3 + midAvg * 0.10 + uprAvg * 0.35;
             yVal = bassAvg * 0.325 + midAvg * 0.175 + uprAvg * 0.10;
-            avgY = (oldY === 0) ? yVal : ((oldY + yVal) / 2);
+            avgY = (that.oldY === 0) ? yVal : ((that.oldY + yVal) / 2);
             //avgY = yVal;
 
-            inputRec.shift();
-            inputRec.push(avgY);
-            terrainData.push(avgY);
+            that.inputRec.shift();
+            that.inputRec.push(avgY);
+            // Add this to the member queue
+            that.terrainData.push(avgY);
 
-            for (var i = 0; i < inputRec.length; i++) {
+            for (var i = 0; i < that.inputRec.length; i++) {
                 ctx.fillStyle = (i % 2 === 0) ? "#FF0000" : "#0000FF";
-                ctx.fillRect(i, cheight - inputRec[i], i, cheight);
+                ctx.fillRect(i, cheight - that.inputRec[i], i, cheight);
             }
 
-            //console.log (avgY);
+            console.log (avgY);
 
             that.animationId = requestAnimationFrame(drawMeter);
         }
@@ -315,5 +310,8 @@ Visualizer.prototype = {
             }
             this.infoUpdateId = setTimeout(animateDot, 250);
         };
+    },
+    getTerrainData: function () {
+        return this.terrainData;
     }
 }
