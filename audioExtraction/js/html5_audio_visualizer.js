@@ -7,6 +7,18 @@
  * view the project page:https://github.com/Wayou/HTML5_Audio_Visualizer/
  * view online demo:http://wayouliu.duapp.com/mess/audio_visualizer.html
  */
+
+// Global queue for transmitting terrain numbers.
+var terrainData = [];
+
+// Globals for music record keeping... This is gross but I don't know where else to put them right now.
+var inputRec = new Array(canvas.width);
+for (var i = 0; i < inputRec.length; i++)
+{
+    inputRec[i] = 0;
+}
+var oldY = 0;
+
 window.onload = function() {
     new Visualizer().ini();
 };
@@ -127,9 +139,15 @@ Visualizer.prototype = {
             analyser = audioContext.createAnalyser(),
             firstDelay = audioContext.createDelay(),
             secondDelay = audioContext.createDelay(),
+            thirdDelay = audioContext.createDelay(),
+            fourthDelay = audioContext.createDelay(),
+            fifthDelay = audioContext.createDelay(),
             that = this;
         firstDelay.delayTime.value = 100.0;
         secondDelay.delayTime.value = 100.0;
+        thirdDelay.delayTime.value = 100.0;
+        fourthDelay.delayTime.value = 100.0;
+        fifthDelay.delayTime.value = 100.0;
         
         //connect the source to the analyser
         //audioBufferSouceNode.connect(analyser);
@@ -162,8 +180,11 @@ Visualizer.prototype = {
         // Delay the actual sound output
         audioBufferSouceNode.connect(firstDelay);
         firstDelay.connect(secondDelay);
-        audioBufferSouceNode.connect(audioContext.destination); // Purely for sound calibration - disable when actually using
-        //secondDelay.connect(audioContext.destination);
+        secondDelay.connect(thirdDelay);
+        thirdDelay.connect(fourthDelay);
+        fourthDelay.connect(fifthDelay);
+        //audioBufferSouceNode.connect(audioContext.destination); // Purely for sound calibration - disable when actually using
+        fifthDelay.connect(audioContext.destination);
         this.status = 1;
         this.source = audioBufferSouceNode;
         audioBufferSouceNode.onended = function() {
@@ -212,28 +233,13 @@ Visualizer.prototype = {
             
             // Begin height calculations:
             var yVal = 0,
-                oldY = 0,
                 avgY = 0,
                 bassAvg = 0,
                 midAvg = 0,
                 uprAvg = 0;
 
-            
             for (var i = 0; i < meterNum; i++) {
                 var value = array[i * step];
-                if (capYPositionArray.length < Math.round(meterNum)) {
-                    capYPositionArray.push(value);
-                };
-                ctx.fillStyle = capStyle;
-                //draw the cap, with transition effect
-                if (value < capYPositionArray[i]) {
-                    ctx.fillRect(i * 12, cheight - (--capYPositionArray[i]), meterWidth, capHeight);
-                } else {
-                    ctx.fillRect(i * 12, cheight - value, meterWidth, capHeight);
-                    capYPositionArray[i] = value;
-                };
-                ctx.fillStyle = gradient; //set the filllStyle to gradient for a better look
-                ctx.fillRect(i * 12 /*meterWidth+gap*/ , cheight - value + capHeight, meterWidth, cheight); //the meter
 
                 // Calculating our averages
                 if(i <= 2) {
@@ -256,9 +262,21 @@ Visualizer.prototype = {
                 }
             }
             oldY = yVal;
-            yVal = bassAvg * 0.3 + midAvg * 0.10 + uprAvg * 0.35;
-            avgY = (oldY + yVal) / 2;
-            console.log (avgY);
+            //yVal = bassAvg * 0.3 + midAvg * 0.10 + uprAvg * 0.35;
+            yVal = bassAvg * 0.325 + midAvg * 0.175 + uprAvg * 0.10;
+            avgY = (oldY === 0) ? yVal : ((oldY + yVal) / 2);
+            //avgY = yVal;
+
+            inputRec.shift();
+            inputRec.push(avgY);
+            terrainData.push(avgY);
+
+            for (var i = 0; i < inputRec.length; i++) {
+                ctx.fillStyle = (i % 2 === 0) ? "#FF0000" : "#0000FF";
+                ctx.fillRect(i, cheight - inputRec[i], i, cheight);
+            }
+
+            //console.log (avgY);
 
             that.animationId = requestAnimationFrame(drawMeter);
         }
