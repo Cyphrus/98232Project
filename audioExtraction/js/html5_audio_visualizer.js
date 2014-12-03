@@ -155,12 +155,15 @@ Visualizer.prototype = {
         if (this.source !== null) {
             this.source.stop(0);
         }
+
         audioBufferSouceNode.start();
+        // Start streaming to the analyser
         audioBufferSouceNode.connect(analyser);
+        // Delay the actual sound output
         audioBufferSouceNode.connect(firstDelay);
         firstDelay.connect(secondDelay);
-        //audioBufferSouceNode.connect(audioContext.destination);
-        secondDelay.connect(audioContext.destination);
+        audioBufferSouceNode.connect(audioContext.destination); // Purely for sound calibration - disable when actually using
+        //secondDelay.connect(audioContext.destination);
         this.status = 1;
         this.source = audioBufferSouceNode;
         audioBufferSouceNode.onended = function() {
@@ -206,6 +209,16 @@ Visualizer.prototype = {
             };
             var step = Math.round(array.length / meterNum); //sample limited data from the total array
             ctx.clearRect(0, 0, cwidth, cheight);
+            
+            // Begin height calculations:
+            var yVal = 0,
+                oldY = 0,
+                avgY = 0,
+                bassAvg = 0,
+                midAvg = 0,
+                uprAvg = 0;
+
+            
             for (var i = 0; i < meterNum; i++) {
                 var value = array[i * step];
                 if (capYPositionArray.length < Math.round(meterNum)) {
@@ -221,7 +234,32 @@ Visualizer.prototype = {
                 };
                 ctx.fillStyle = gradient; //set the filllStyle to gradient for a better look
                 ctx.fillRect(i * 12 /*meterWidth+gap*/ , cheight - value + capHeight, meterWidth, cheight); //the meter
+
+                // Calculating our averages
+                if(i <= 2) {
+                    bassAvg = bassAvg + value;
+                    if (i === 2) {
+                        bassAvg = bassAvg / 3;
+                    }
+                }
+                else if (i <= 11){
+                    midAvg = midAvg + value;
+                    if (i === 11) {
+                        midAvg = midAvg / 9;
+                    }
+                }
+                else {
+                    uprAvg = uprAvg + value;
+                    if (i === meterNum - 1) {
+                        uprAvg = uprAvg / 4;
+                    }
+                }
             }
+            oldY = yVal;
+            yVal = bassAvg * 0.3 + midAvg * 0.10 + uprAvg * 0.35;
+            avgY = (oldY + yVal) / 2;
+            console.log (avgY);
+
             that.animationId = requestAnimationFrame(drawMeter);
         }
         this.animationId = requestAnimationFrame(drawMeter);
