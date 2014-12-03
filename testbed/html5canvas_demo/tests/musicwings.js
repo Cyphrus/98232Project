@@ -171,7 +171,7 @@ embox2dTest_musicwings.prototype.step = function() {
     if(this.falling)
     {
         var vel = this.playerBody.GetLinearVelocity();
-        this.playerBody.SetLinearVelocity(new b2Vec2(vel.get_x(), vel.get_y() + 0.15 * this.FALLING_ACCEL));
+        this.playerBody.SetLinearVelocity(new b2Vec2(vel.get_x(), vel.get_y() + 0.15 * this.FALLING_ACCEL));    // update fuel
     }
     else if(this.boosting)
     {
@@ -182,10 +182,11 @@ embox2dTest_musicwings.prototype.step = function() {
         this.currentBoostFuel -= this.BOOST_DRAINAGE_RATE;
     }
 
-    // update fuel
-    this.currentBoostFuel += this.BOOST_REGENERATION_RATE;
+    if(!this.boosting) {
+        this.currentBoostFuel += this.BOOST_REGENERATION_RATE;
+    }
     this.currentBoostFuel = Math.max(Math.min(this.currentBoostFuel, 100.0), 0.0);
-    console.log(this.currentBoostFuel);
+    //console.log(this.currentBoostFuel);
 
     //move camera to follow player
     var pos = this.playerBody.GetPosition();
@@ -264,9 +265,10 @@ embox2dTest_musicwings.prototype.onKeyDown = function(canvas, evt) {
         this.playerBody.SetLinearVelocity(newVel);
         */
     } else if ( evt.keyCode == 87 ) { // 'w'
-        if(this.currentBoostFuel > 0.0)
-        {
+        if(this.currentBoostFuel > this.BOOST_DRAINAGE_RATE) {
             this.boosting = true;
+        } else {
+            this.boosting = false;
         }
         /*
         if(this.currentBoostFuel > this.BOOST_DRAINAGE_RATE) {
