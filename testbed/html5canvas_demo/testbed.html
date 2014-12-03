@@ -1,7 +1,9 @@
 <html>
     <head>
         <title>Emscripten Box2D demo</title>
-        
+
+        <script type="text/javascript" src="../../audioExtraction/js/html5_audio_visualizer.js"></script>
+
         <script type="text/javascript" src="../box2d.js"></script>
         <script type="text/javascript" src="embox2d-helpers.js"></script>
         <script type="text/javascript" src="embox2d-html5canvas-debugDraw.js"></script>
@@ -16,7 +18,6 @@
         <script type="text/javascript" src="tests/dominos.js"></script>
         <script type="text/javascript" src="tests/musicwings.js"></script>
 
-        <script type="text/javascript" src="../../audioExtraction/js/html5_audio_visualizer.js"></script>
         <!--
         <script type="text/javascript" src="tests/template.js"></script>
         -->
@@ -32,17 +33,29 @@
         
     </head>
     <body>
+        <div id="wrapper">
+            <div id="fileWrapper" class="file_wrapper">
+                <div id="info">
+                    Input Form | 98-232 Music Wings
+                </div>
+                <label for="uploadedFile">Drag&drop or select a file to play:</label>
+                <input type="file" id="uploadedFile"></input>
+            </div>
+            <div id="visualizer_wrapper">
+                <canvas id='audio' width="800" height="350"></canvas>
+            </div>
+        </div>
         <div style="text-align:center">
             <h2>Emscripten Box2D demo</h2>
             This demo uses JavaScript generated from the Box2D C++ source code by the <a href="https://github.com/kripken/emscripten/wiki">emscripten</a> compiler.<br>
             See <a href="https://github.com/kripken/box2d.js">https://github.com/kripken/box2d.js</a> for more details.<br>
-            <br>            
+            <br>
             <!--
-                If you change the size of the canvas, you'll also need to change 
+                If you change the size of the canvas, you'll also need to change
                 the value of 'viewCenterPixel' in embox2d-html5canvas-testbed.js
             -->
-            <div style="margin:auto;width:640px;padding:2px;border:1px solid #888;text-align:left">            
-            
+            <div style="margin:auto;width:640px;padding:2px;border:1px solid #888;text-align:left">
+
                 <!--<canvas id="canvas" width="480" height="320" tabindex='1'></canvas>-->
                 <canvas id="canvas" width="640" height="480" tabindex='1'></canvas>
                 <div style="width:636px;padding:2px;background-color:#ddd">
@@ -70,7 +83,7 @@
                     </select>
                 </div>
                 <br>
-                    
+
                 Debug draw flags:<br>
                 <input id="drawShapesCheck" type="checkbox" onclick="updateWorldFromDebugDrawCheckboxes();">Shapes<br>
                 <input id="drawJointsCheck" type="checkbox" onclick="updateWorldFromDebugDrawCheckboxes();">Joints<br>
@@ -78,12 +91,12 @@
                 <!--<input id="drawPairsCheck" type="checkbox" onclick="updateWorldFromDebugDrawCheckboxes();">Pairs<br>-->
                 <input id="drawTransformsCheck" type="checkbox" onclick="updateWorldFromDebugDrawCheckboxes();">Transforms<br>
                 <br>
-                
+
                 <input id="showStatsCheck" type="checkbox" onclick="updateContinuousRefreshStatus();">Show stats<br>
                 <span id="feedbackSpan"></span>
                 <br>
                 </div>
-            </div>        
+            </div>
         </div>
     </body>
 </html>

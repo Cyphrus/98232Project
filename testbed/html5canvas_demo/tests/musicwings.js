@@ -31,6 +31,9 @@ var embox2dTest_musicwings = function() {
     this.MAX_INITIAL_PARTICLE_VELOCITY_Y = 1;
     this.ANIMATION_CIRCLE = null;
     this.ANIMATION_SQUARE = null;
+
+    // music
+    this.visualizer = null;
 }
 
 embox2dTest_musicwings.prototype.setNiceViewCenter = function() {
@@ -41,6 +44,23 @@ embox2dTest_musicwings.prototype.setNiceViewCenter = function() {
 
 embox2dTest_musicwings.prototype.setup = function() {
     //set up the Box2D scene here - the world is already created
+
+    var fileSelector = document.createElement('input');
+    fileSelector.setAttribute('type', 'file');
+
+    var selectDialogueLink = document.createElement('a');
+    selectDialogueLink.setAttribute('href', '');
+    selectDialogueLink.innerText = "Select File";
+
+    selectDialogueLink.onclick = function () {
+        fileSelector.click();
+        return false;
+    }
+
+    document.body.appendChild(selectDialogueLink);
+
+    // music choice
+    this.visualizer = new Visualizer();
 
     // create the player body
     var circleShape = new b2CircleShape();
@@ -157,7 +177,7 @@ embox2dTest_musicwings.prototype.step = function() {
     // if player has travelled far enough, spawn a new edge
     if ( (pos.get_x() / this.EDGE_X) > this.edgeCount )
     {
-        var array;
+        var array = this.virtualizer.getTerrainData();
 
         for (var i = 0; i < array.length; i++)
         {

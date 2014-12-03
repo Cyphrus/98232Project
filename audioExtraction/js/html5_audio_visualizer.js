@@ -30,7 +30,7 @@ var Visualizer = function() {
 Visualizer.prototype = {
     ini: function() {
         this._prepareAPI();
-        this._addEventListner();
+        this._addEventListener();
     },
     _prepareAPI: function() {
         //fix browser vender for AudioContext and requestAnimationFrame
@@ -44,7 +44,7 @@ Visualizer.prototype = {
             console.log(e);
         }
     },
-    _addEventListner: function() {
+    _addEventListener: function() {
         var that = this,
             audioInput = document.getElementById('uploadedFile'),
             dropContainer = document.getElementsByTagName("canvas")[0];
@@ -181,7 +181,7 @@ Visualizer.prototype = {
         fifthDelay.connect(audioContext.destination);
         this.status = 1;
         this.source = audioBufferSouceNode;
-        audioBufferSouceNode.onended = function() {
+        audioBufferSouceNode.onended = function() { /** WARNING: song immediately stops playing due to delay time **/
             that._audioEnd(that);
         };
         this._updateInfo('Playing ' + this.fileName, false);
