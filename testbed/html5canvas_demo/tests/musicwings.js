@@ -10,6 +10,27 @@ var embox2dTest_musicwings = function() {
 
     this.EDGE_X = 3;
     this.NUM_EDGES = 10;
+
+    // speed diffs
+    this.INITIAL_VELOCITY = new b2Vec2(3,2);
+    this.TERMINAL_VELOCITY_X = 40; // maximum going right
+    this.TERMINAL_VELOCITY_Y = -50; // maximum going down
+    this.VELOCITY_Y = -2;
+
+    // boost
+    this.onGround = false;
+    this.currentBoostFuel = 100.0; // a percentage
+    this.MAX_BOOST_FUEL = 100.0;
+    this.BOOST_DRAINAGE_RATE = 3.00;
+    this.BOOST_REGENERATION_RATE = 0.1;
+    this.BOOST_VELOCITY = new b2Vec2(0,1);
+
+    // animation
+    this.MAX_ANIMATION_PARTICLES = 10;
+    this.MAX_INITIAL_PARTICLE_VELOCITY_X = 1;
+    this.MAX_INITIAL_PARTICLE_VELOCITY_Y = 1;
+    this.ANIMATION_CIRCLE = null;
+    this.ANIMATION_SQUARE = null;
 }
 
 embox2dTest_musicwings.prototype.setNiceViewCenter = function() {
@@ -30,9 +51,60 @@ embox2dTest_musicwings.prototype.setup = function() {
     fd.set_friction(0.9);
     var bd = new b2BodyDef();
     bd.set_type(b2_dynamicBody);
-    bd.set_position( new b2Vec2(4,10) );
+    bd.set_position( new b2Vec2(3,10) );
     this.playerBody = world.CreateBody(bd);
     this.playerBody.CreateFixture(fd);
+    this.playerBody.SetLinearVelocity(this.INITIAL_VELOCITY);
+
+    // set collision detection for boosts
+    /*
+    var listener = new Box2D.JSContactListener();
+    listener.BeginContact = function (contact) {
+        this.currentBoostFuel += this.BOOST_REGENERATION_RATE;
+        //this.playerBody.set_position(new b2Vec2(3,10));
+        this.onGround = true;
+        console.log("Contact detected");
+        console.log(this.onGround);
+    }
+    listener.EndContact = function (contact) {
+        this.onGround = false;
+        console.log("Contact removed");
+        console.log(this.onGround);
+    }
+    listener.PostSolve = function (contact, impulse) {
+        // TODO Auto-generated method stub
+    }
+    listener.PreSolve = function (contact, oldManifold) {
+        // TODO Auto-generated method stub
+    }
+    world.SetContactListener(listener);
+    var tttt = world.GetContactList();
+    console.log(tttt);
+    */
+
+    /*
+    // animation parts
+    // circle
+    var animCircle = new b2CircleShape();
+    animCircle.set_m_radius(0.4);
+    var fdac = new b2FixtureDef();
+    fdac.set_shape(animCircle);
+    fdac.set_density(1.0);
+    fdac.set_friction(0.9);
+    var bdac = new b2BodyDef();
+    bdac.set_type(b2_dynamicBody);
+    bdac.set_position( new b2Vec2(3,10) );
+    // square
+    var animSquare = new b2();
+    animCircle.set_m_radius(0.4);
+    var fdac = new b2FixtureDef();
+    fdac.set_shape(animCircle);
+    fdac.set_density(1.0);
+    fdac.set_friction(0.9);
+    var bdac = new b2BodyDef();
+    bdac.set_type(b2_dynamicBody);
+    bdac.set_position( new b2Vec2(3,10) );
+    */
 
     var edgeVerts = [];
     edgeVerts.push(new b2Vec2(0, -1));
@@ -74,6 +146,8 @@ embox2dTest_musicwings.prototype.setup = function() {
 embox2dTest_musicwings.prototype.step = function() {
     //this function will be called at the beginning of every time step
 
+    // animatePlayer();
+
     //move camera to follow player
     var pos = this.playerBody.GetPosition();
     var vel = this.playerBody.GetLinearVelocity();
@@ -88,8 +162,10 @@ embox2dTest_musicwings.prototype.step = function() {
         var v0 = this.lastEdgeVerts[0]
         var v1 = this.lastEdgeVerts[1]
         var v2 = this.lastEdgeVerts[2]
-    
-        var v3 = new b2Vec2(v2.get_x() + this.EDGE_X, -(12 + this.edgeCount) );
+
+        var previousSlope = (v2.get_y()-v1.get_y()) / (v2.get_x()-v1.get_x());
+        var newSlope = previousSlope + ((0.2-Math.random()) * 3);
+        var v3 = new b2Vec2(v2.get_x() + this.EDGE_X, v2.get_y()+newSlope);
     
         var edge = new b2EdgeShape();
         edge.Set(v1, v2);
@@ -106,16 +182,48 @@ embox2dTest_musicwings.prototype.step = function() {
         this.lastEdgeVerts.shift();
         this.lastEdgeVerts.push(v3);
     }
+
+    // adjust speeds so you won't break the floor
+    // console.log(vel.get_x() + " | " + vel.get_y());
+    var adjustedVel = new b2Vec2((vel.get_x() > this.TERMINAL_VELOCITY_X) ? this.TERMINAL_VELOCITY_X : vel.get_x(),
+        (vel.get_y() < this.TERMINAL_VELOCITY_Y) ? this.TERMINAL_VELOCITY_Y : vel.get_y());
+    this.playerBody.SetLinearVelocity(adjustedVel);
+
+    // boost fuel increase
+    this.currentBoostFuel += this.BOOST_REGENERATION_RATE;
+    this.currentBoostFuel = (this.currentBoostFuel > this.MAX_BOOST_FUEL) ? this.MAX_BOOST_FUEL : this.currentBoostFuel;
+    console.log(this.currentBoostFuel);
 }
 
+/*
+embox2dTest_musicwings.prototype.animatePlayer = function() {
+    for(var i = 0; i < Math.random()*this.MAX_ANIMATION_PARTICLES; i++) {
+        // create particle
+
+        this.particleBody.SetLinearVelocity(new b2Vec2(Math.random() * this.MAX_INITIAL_PARTICLE_VELOCITY_X,
+            Math.random() * this.MAX_INITIAL_PARTICLE_VELOCITY_Y));
+    }
+}
+*/
+
 embox2dTest_musicwings.prototype.onKeyDown = function(canvas, evt) {
-    if ( evt.keyCode == 65 ) { // 'a'
-        //do something when the 'a' key is pressed
+    evt.preventDefault();
+    if ( evt.keyCode == 32 ) { // space
+        var currVel = this.playerBody.GetLinearVelocity();
+        var newVel = new b2Vec2(currVel.get_x(), currVel.get_y()+this.VELOCITY_Y);
+        this.playerBody.SetLinearVelocity(newVel);
+    } else if ( evt.keyCode == 87 ) { // 'w'
+        if(this.currentBoostFuel > this.BOOST_DRAINAGE_RATE) {
+            this.currentBoostFuel -= this.BOOST_DRAINAGE_RATE;
+            var currVel = this.playerBody.GetLinearVelocity();
+            this.playerBody.SetLinearVelocity(new b2Vec2(currVel.get_x() + this.BOOST_VELOCITY.get_x(),
+                currVel.get_y() + this.BOOST_VELOCITY.get_y()));
+        }
     }
 }
 
 embox2dTest_musicwings.prototype.onKeyUp = function(canvas, evt) {
-    if ( evt.keyCode == 65 ) { // 'a'
-        //do something when the 'a' key is released
+    evt.preventDefault();
+    if ( evt.keyCode == 87 ) { // 'w'
     }
 }

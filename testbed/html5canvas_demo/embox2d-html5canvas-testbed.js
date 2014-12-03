@@ -270,7 +270,7 @@ function init() {
     myDebugDraw = getCanvasDebugDraw();            
     myDebugDraw.SetFlags(e_shapeBit);
     
-    myQueryCallback = new JSQueryCallback();
+    myQueryCallback = new Box2D.JSQueryCallback();
 
     myQueryCallback.ReportFixture = function(fixturePtr) {
         var fixture = Box2D.wrapPointer( fixturePtr, b2Fixture );
