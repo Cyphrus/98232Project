@@ -157,30 +157,40 @@ embox2dTest_musicwings.prototype.step = function() {
     // if player has travelled far enough, spawn a new edge
     if ( (pos.get_x() / this.EDGE_X) > this.edgeCount )
     {
-        this.edgeCount += 1;
+        var array;
 
-        var v0 = this.lastEdgeVerts[0]
-        var v1 = this.lastEdgeVerts[1]
-        var v2 = this.lastEdgeVerts[2]
+        for (var i = 0; i < array.length; i++)
+        {
+            var nextY = array[i];
+            this.edgeCount += 1;
 
-        var previousSlope = (v2.get_y()-v1.get_y()) / (v2.get_x()-v1.get_x());
-        var newSlope = previousSlope + ((0.2-Math.random()) * 3);
-        var v3 = new b2Vec2(v2.get_x() + this.EDGE_X, v2.get_y()+newSlope);
-    
-        var edge = new b2EdgeShape();
-        edge.Set(v1, v2);
-        edge.set_m_hasVertex0(true);
-        edge.set_m_hasVertex3(true);
-        edge.set_m_vertex0(v0);
-        edge.set_m_vertex3(v3);
-    
-        this.tfd.set_shape(edge);
-        this.edges.push(this.terrainBody.CreateFixture(this.tfd));
-    
-        this.terrainBody.DestroyFixture(this.edges[0]);
-        this.edges.shift();
-        this.lastEdgeVerts.shift();
-        this.lastEdgeVerts.push(v3);
+            var v0 = this.lastEdgeVerts[0];
+            var v1 = this.lastEdgeVerts[1];
+            var v2 = this.lastEdgeVerts[2];
+
+            var v3 = new b2Vec2(v2.get_x() + this.EDGE_X, newY);
+            // randomization
+            //var previousSlope = (v2.get_y()-v1.get_y()) / (v2.get_x()-v1.get_x());
+            //var newSlope = previousSlope + ((0.2-Math.random()) * 3);
+            //var v3 = new b2Vec2(v2.get_x() + this.EDGE_X, v2.get_y()+newSlope);
+
+            var edge = new b2EdgeShape();
+            edge.Set(v1, v2);
+            edge.set_m_hasVertex0(true);
+            edge.set_m_hasVertex3(true);
+            edge.set_m_vertex0(v0);
+            edge.set_m_vertex3(v3);
+
+            this.tfd.set_shape(edge);
+            this.edges.push(this.terrainBody.CreateFixture(this.tfd));
+
+            this.lastEdgeVerts.shift();
+            this.lastEdgeVerts.push(v3);
+        }
+        if(array.length > 0) {
+            this.terrainBody.DestroyFixture(this.edges[0]);
+            this.edges.shift();
+        }
     }
 
     // adjust speeds so you won't break the floor

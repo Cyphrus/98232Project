@@ -25,7 +25,7 @@ var Visualizer = function() {
     this.allCapsReachBottom = false;
     this.terrainData = [];
     this.oldY = 0;
-    this.inputRec = new Array(canvas.width);
+    this.inputRec = new Array(audio.width);
 };
 Visualizer.prototype = {
     ini: function() {
@@ -191,7 +191,7 @@ Visualizer.prototype = {
     },
     propogateQueue: function (analyser) {
         var that = this,
-            canvas = document.getElementById('canvas'),
+            canvas = document.getElementById('audio'),
             cwidth = canvas.width,
             cheight = canvas.height - 2,
             meterWidth = 10, //width of the meters in the spectrum
