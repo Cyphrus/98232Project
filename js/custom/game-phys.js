@@ -1,47 +1,55 @@
-// typedefs
-var b2Vec2 = Box2D.Common.Math.b2Vec2
-    ,   b2AABB = Box2D.Collision.b2AABB
-    ,   b2BodyDef = Box2D.Dynamics.b2BodyDef
-    ,   b2Body = Box2D.Dynamics.b2Body
-    ,   b2FixtureDef = Box2D.Dynamics.b2FixtureDef
-    ,   b2Fixture = Box2D.Dynamics.b2Fixture
-    ,   b2World = Box2D.Dynamics.b2World
-    ,   b2MassData = Box2D.Collision.Shapes.b2MassData
-    ,   b2PolygonShape = Box2D.Collision.Shapes.b2PolygonShape
-    ,   b2CircleShape = Box2D.Collision.Shapes.b2CircleShape
-    ,   b2DebugDraw = Box2D.Dynamics.b2DebugDraw
-    ,   b2MouseJointDef =  Box2D.Dynamics.Joints.b2MouseJointDef
-    ,   b2Transform = Box2D.Common.Math.b2Transform
-    ;
-
+using(Box2D);
 // create world with gravity
-var world = new b2World(new b2Vec2(0, 10), true);
+var world = new b2World(new b2Vec2(0, 10));
 
+var bodyDef = new b2BodyDef();
+bodyDef.set_type( b2_dynamicBody );
+var dynamicBody = world.CreateBody( bodyDef );
+var circleShape = new b2CircleShape();
+circleShape.set_m_radius( 0.5 );
+body.CreateFixture( circleShape, 1.0 );
+
+/*
 var fixDef = new b2FixtureDef;
 fixDef.density = 1.0;
 fixDef.friction = 0.5;
 fixDef.restitution = 0.2;
 
-var bodyDef = new b2BodyDef;
-
 // create the 'player' circle body
-bodyDef.type = b2Body.b2_staticBody;
-bodyDef.linearVelocity = new b2Vec2(0,0);
+var pbodyDef = new b2BodyDef;
+pbodyDef.type = b2Body.b2_dynamicBody;
+pbodyDef.position.x = 10;
+pbodyDef.position.y = 30;
+pbodyDef.linearVelocity = new b2Vec2( 10, 5 );
+
 fixDef.shape = new b2CircleShape;
-fixDef.shape.SetRadius(0.1);
+fixDef.shape.SetRadius(1);
+
+// create dynamic player body
+var playerBody = world.CreateBody(pbodyDef);
+var playerFixture = playerBody.CreateFixture(fixDef);
+
+// create static terrain body
+var edge = new b2EdgeShape(new b2Vec2(10,10), new b2Vec2(20,10));
+var edgeFixDef = new b2FixtureDef;
+edgeFixDef.shape = new b2EdgeShape(new b2Vec2(10,10), new b2Vec2(20,10));
+var bodyDef = new b2BodyDef;
+bodyDef.type  = b2Body.b2_staticBody;
 bodyDef.position.x = 0;
 bodyDef.position.y = 0;
-var body = world.CreateBody(bodyDef);
-var playerFixture = body.CreateFixture(fixDef);
-
-
+var terrainBody = world.CreateBody(bodyDef);
+var edgeFixture = terrainBody.CreateFixture(edgeFixDef);
+*/
 // debug draw
-var debugDraw = new b2DebugDraw();
-debugDraw.SetSprite(document.getElementById("canvas").getContext("2d"));
-debugDraw.SetDrawScale(30.0);
-debugDraw.SetFillAlpha(0.5);
-debugDraw.SetLineThickness(1.0);
-debugDraw.SetFlags(b2DebugDraw.e_shapeBit | b2DebugDraw.e_jointBit);
+
+var canvas = document.getElementById("canvas");
+var context = canvas.getContext("2d");
+
+var canvasOffset.x = 0;
+var canvasOffset.y = 0;
+
+var debugDraw = getCanvasDebugDraw();
+debugDraw.SetFlags(e_shapeBit);
 world.SetDebugDraw(debugDraw);
 
 function update() {

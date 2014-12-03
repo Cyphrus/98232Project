@@ -36,10 +36,11 @@ function shootCircle() {
     body.CreateFixture(fixDef);
 
     window.setInterval(function(){
-        world.DestroyBody(bodyDef);
+        world.DestroyBody(body);
         delete(bodyDef);
+        delete(fixDef.shape);
         delete(fixDef);
-    }, 100);
+    }, 5000);
 }
 
 // var canvas = document.getElementById('canvas');
