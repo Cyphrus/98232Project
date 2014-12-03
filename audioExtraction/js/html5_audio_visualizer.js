@@ -266,7 +266,7 @@ Visualizer.prototype = {
             // Add this to the member queue
             that.terrainData.push(avgY);
 
-            //console.log(that.terrainData[that.terrainData.length-1]);
+            console.log(that.terrainData[that.terrainData.length-1]);
         }
         setInterval(calcHeights, 60);
     },
